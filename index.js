@@ -10,11 +10,12 @@ app.get('/hi', (req, res) => {
 });
 
 app.get('/test', (req, res) => {
-  challengeResponse = req.query.challenge;
+  challengeResponse = req.query.challenge_token;
+  console.log("challenge_token:", challengeResponse);
 
   res.setHeader('Content-Type', 'text/plain');
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.status(200).send(challengeResponse);
+  res.status(200).send({ 'challenge_token': challengeResponse });
 });
 
 app.post('/test', (req, res) => {
