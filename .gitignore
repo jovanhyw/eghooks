@@ -33,3 +33,5 @@ node_modules/
 *.md5
 *.tar
 *.tar.gz
+
+/certs
