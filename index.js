@@ -13,12 +13,11 @@ app.get('/hi', (req, res) => {
 });
 
 app.get('/webhook', (req, res) => {
-  challengeResponse = req.query.challenge_token;
+  challengeResponse = req.query.challengeToken;
   console.log("challenge_token:", challengeResponse);
 
-  res.setHeader('Content-Type', 'text/plain');
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.status(200).send({ 'challenge_token': challengeResponse });
+  res.status(200).send({ 'challengeToken': challengeResponse });
 });
 
 app.post('/webhook', (req, res) => {
@@ -41,6 +40,9 @@ app.post('/webhook', (req, res) => {
       msg: 'webhook received successfully',
       data: req.body
     })
+  } else {
+    // return 200 just to reply to webhook
+    res.status(200).send()
   }
 });
 
