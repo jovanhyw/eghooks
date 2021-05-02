@@ -21,26 +21,25 @@ app.get('/webhook', (req, res) => {
 });
 
 app.post('/webhook', async (req, res) => {
-  console.log(req.body);
-  console.log(req.headers);
+  console.log('req.body:', req.body);
+  console.log('req.headers', req.headers);
 
-  await new Promise(r => setTimeout(r, 2000));
+  // await new Promise(r => setTimeout(r, 2000));
 
   // 1. Save the current timestamp of the received request to a variable
   timeReceived = Math.floor(new Date().getTime() / 1000)
-  console.log(timeReceived);
+  console.log('timeReceived:', timeReceived);
   secret = process.env.WEBHOOK_SECRET;
 
   // 2. From the X-TECHPASS-SIGNATURE header, extract the timestamp and signatures
   signature = req.headers['x-techpass-signature'];
   const [timekv, signedKv] = signature.split(',')
   const [, timeSent] = timekv.split('=')
-  console.log(timeSent);
+  console.log('timeSent:', timeSent);
   const [, signedHash] = signedKv.split('=')
-  console.log(signedHash);
+  console.log('signedHash:', signedHash);
 
   console.log('time difference:', timeReceived - timeSent);
-  console.log('signedHash:', signedHash);
 
   // If more than 5 mins, treat it as a replay attack and ignore request
   if (timeReceived - timeSent > (60 * 5)) {
