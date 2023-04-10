@@ -21,8 +21,9 @@ app.get('/webhook', (req, res) => {
 });
 
 app.post('/webhook', async (req, res) => {
-  console.log('req.body:', req.body);
-  console.log('req.headers', req.headers);
+  console.log('new webhook:\n');
+  console.log('req.body:', JSON.stringify(req.body, null, 2));
+  console.log('req.headers', JSON.stringify(req.headers, null, 2));
 
   // await new Promise(r => setTimeout(r, 2000));
 
@@ -53,7 +54,12 @@ app.post('/webhook', async (req, res) => {
   signedPayload = `${timeSent}:${reqPayload}`
   // 5. Compute a SHA256 HMAC of the signature payload by using your webhook secret as the key.
   // 6. Compute the hex digest of the HMAC.
-  computed = crypto.createHmac("sha256", secret).update(signedPayload).digest('hex');
+  try {
+    computed = crypto.createHmac("sha256", secret).update(signedPayload).digest('hex');
+  } catch (err) {
+    console.error('err on computing hmac:', err);
+    console.warn('Did you forget to set .env WEBHOOK_SECRET ?')
+  }
   // 7. Compare your computed signature against the signature extracted from
   valid = signedHash === computed
 
@@ -70,6 +76,7 @@ app.post('/webhook', async (req, res) => {
     // return 200 just to reply to webhook
     res.status(200).send()
   }
+  console.log('message completed.\n');
 });
 
 app.listen(PORT, () => {
