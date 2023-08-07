@@ -12,20 +12,21 @@ app.get('/hi', (req, res) => {
   res.status(200).send({ msg: 'hi from api' });
 });
 
-app.get('/webhook', (req, res) => {
+const verifyWebhookEndpoint = (req, res) => {
+  console.log('req.body:', JSON.stringify(req.body, null, 2));
+  console.log('req.headers', JSON.stringify(req.headers, null, 2));
+
   challengeResponse = req.query.challengeToken;
   console.log("challenge_token:", challengeResponse);
 
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.status(200).send({ 'challengeToken': challengeResponse });
-});
+};
 
-app.post('/webhook', async (req, res) => {
+const verifySecret = (req) => {
   console.log('new webhook:\n');
   console.log('req.body:', JSON.stringify(req.body, null, 2));
   console.log('req.headers', JSON.stringify(req.headers, null, 2));
-
-  // await new Promise(r => setTimeout(r, 2000));
 
   // 1. Save the current timestamp of the received request to a variable
   timeReceived = Math.floor(new Date().getTime() / 1000)
@@ -45,7 +46,7 @@ app.post('/webhook', async (req, res) => {
   // If more than 5 mins, treat it as a replay attack and ignore request
   if (timeReceived - timeSent > (60 * 5)) {
     console.log('replay atk');
-    return res.status(200).send()
+    return false
   }
 
   // 3. Save the raw JSON payload to a variable
@@ -65,7 +66,13 @@ app.post('/webhook', async (req, res) => {
 
   console.log('computed:', computed);
   console.log('verified:', valid);
+  return valid
+}
 
+
+app.get('/webhook', verifyWebhookEndpoint);
+app.post('/webhook', async (req, res) => {
+  valid = verifySecret(req)
   if (valid) {
     // do whatever automation when webhook triggered
     res.status(200).send({
@@ -76,6 +83,20 @@ app.post('/webhook', async (req, res) => {
     // return 200 just to reply to webhook
     res.status(200).send()
   }
+  console.log('message completed.\n');
+});
+
+app.get('/webhook500', verifyWebhookEndpoint);
+app.post('/webhook500', async (req, res) => {
+  valid = verifySecret(req)
+  // do whatever automation when webhook triggered
+  res.status(503).send({
+    error: {
+      code: "999",
+      traceId: "abcd1234",
+      message: "mock error",
+    }
+  })
   console.log('message completed.\n');
 });
 
