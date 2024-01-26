@@ -8,8 +8,12 @@ const PORT = process.env.PORT || 4321;
 
 app.use(express.json({ limit: '10kb' }));
 
-app.get('/hi', (req, res) => {
-  res.status(200).send({ msg: 'hi from api' });
+app.get('/', (_, res) => {
+  res.redirect('/hi');
+});
+
+app.get('/hi', (_, res) => {
+  res.status(200).send({ msg: 'hi from eghooks' });
 });
 
 const verifyWebhookEndpoint = (req, res) => {
@@ -75,13 +79,15 @@ app.post('/webhook', async (req, res) => {
   valid = verifySecret(req)
   if (valid) {
     // do whatever automation when webhook triggered
+    // ...
+    // then return 200
     res.status(200).send({
       msg: 'webhook received successfully',
       data: req.body
     })
   } else {
-    // return 200 just to reply to webhook
-    res.status(200).send()
+    // return 500 when secret is invalid
+    res.status(500).send("secret is invalid")
   }
   console.log('message completed.\n');
 });
