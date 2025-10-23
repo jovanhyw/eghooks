@@ -6,14 +6,19 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4321;
 
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({
+  limit: '10kb',
+  verify: (req, res, buf) => {
+    req.rawBody = buf; // store raw bytes
+  }
+}));
 
 app.get('/', (_, res) => {
   res.redirect('/hi');
 });
 
 app.get('/hi', (_, res) => {
-  res.status(200).send({ msg: 'hi from eghooks' });
+  res.status(200).send({ msg: 'hi from eghooks with rawBytes' });
 });
 
 const verifyWebhookEndpoint = (req, res) => {
@@ -53,12 +58,10 @@ const verifySecret = (req) => {
     return false
   }
 
-  // 3. Save the raw JSON payload to a variable
-  reqPayload = JSON.stringify(req.body);
-  // 4. Prepare the signature payload by concatenating the timestamp and JSON payload together, using a colon(:) as a delimiter.
-  signedPayload = `${timeSent}:${reqPayload}`
-  // 5. Compute a SHA256 HMAC of the signature payload by using your webhook secret as the key.
-  // 6. Compute the hex digest of the HMAC.
+  // 3. Prepare the signature payload by concatenating the timestamp and JSON payload together, using a colon(:) as a delimiter.
+  signedPayload = `${timeSent}:${req.rawBody}`
+  // 4. Compute a SHA256 HMAC of the signature payload by using your webhook secret as the key.
+  // 5. Compute the hex digest of the HMAC.
   try {
     computed = crypto.createHmac("sha256", secret).update(signedPayload).digest('hex');
   } catch (err) {
@@ -107,5 +110,5 @@ app.post('/webhook500', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Express server started on port ${PORT}`)
+  console.log(`Express server started on http://localhost:${PORT}`)
 });

@@ -1,8 +1,0 @@
-{
-  "name": "eghooks",
-  "framework": "express",
-  "scripts": {
-    "build": "echo \"build not required\"",
-    "start": "node index.js"
-  }
-}
